@@ -18,7 +18,9 @@ NextBest/
 │
 ├── src/                    # Source code files
 │   ├── movie_recommender.py   # Movie recommendation functionality
-│   └── anime_recommender.py   # Anime recommendation functionality
+│   ├── anime_recommender.py   # Anime recommendation functionality
+│   ├── HistoryManager.py      # Manages History
+│   └── recommended.csv
 │
 ├── streamlit_app/          # Streamlit application
 │   └── app.py              # Main Streamlit app
