@@ -12,6 +12,7 @@ sys.path.append(folder_path)
 
 from movie_recommender import get_movie_recommendations,get_filtered_recommendations
 from anime_recommender import get_anime_recommendations
+from HistoryManager import save_recommendations_to_csv
 
 
 # Load data from pickle file
@@ -26,6 +27,17 @@ option = st.sidebar.selectbox(
     index=None,
     help="Choose between movie recommendations or anime recommendations."
 )
+
+with st.expander("See History"):
+    try:
+        df = pd.read_csv("../src/recommended.csv")
+        if df.empty:
+            st.write("No data available.")
+        else:
+            st.dataframe(df)
+
+    except FileNotFoundError:
+        st.write("File not found.")
 
 if(option == "Movie"):
     st.sidebar.header("_Movie-:blue[Mate]_ :movie_camera:")
@@ -72,6 +84,7 @@ if(option == "Movie"):
                 poster_url, vote_average = recommended_movie_posters[i]
                 st.markdown(f"Rating:star:: {vote_average}")
                 st.image(poster_url)
+        save_recommendations_to_csv("Movie",selected_movie,recommended_movie_names)
 
 elif(option == "Anime"):
     st.sidebar.header("Anime-:blue[Mate]_ :movie_camera:")
@@ -102,3 +115,4 @@ elif(option == "Anime"):
                 poster_url, vote_average = recommended_anime_posters[i]
                 st.markdown(f"Rating:star:: {vote_average}")
                 st.image(poster_url)
+        save_recommendations_to_csv("Anime",selected_anime,recommended_anime_names)
