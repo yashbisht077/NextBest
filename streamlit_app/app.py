@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import streamlit as st
 import pickle
 import sys
@@ -77,14 +76,19 @@ if(option == "Movie"):
         else:
             recommended_movie_names, recommended_movie_posters = get_movie_recommendations(selected_movie, num_movies_to_recommend)
 
-        cols = st.columns(num_movies_to_recommend)
-        for i in range(num_movies_to_recommend):
-            with cols[i]:
-                st.text(recommended_movie_names[i])
-                poster_url, vote_average = recommended_movie_posters[i]
-                st.markdown(f"Rating:star:: {vote_average}")
-                st.image(poster_url)
-        save_recommendations_to_csv("Movie",selected_movie,recommended_movie_names)
+        num_recommended = len(recommended_movie_names)
+
+        if len(recommended_movie_names) == 0 or len(recommended_movie_posters) == 0:
+            st.text("No recommendations found.")
+        else:
+            cols = st.columns(num_recommended)
+            for i in range(num_recommended):
+                with cols[i]:
+                    st.text(recommended_movie_names[i])
+                    poster_url, vote_average = recommended_movie_posters[i]
+                    st.markdown(f"Rating:star:: {vote_average}")
+                    st.image(poster_url)
+            save_recommendations_to_csv("Movie", selected_movie, recommended_movie_names)
 
 elif(option == "Anime"):
     st.sidebar.header("Anime-:blue[Mate]_ :movie_camera:")

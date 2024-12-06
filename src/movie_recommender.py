@@ -1,5 +1,3 @@
-import pandas as pd
-import numpy as np
 import requests
 import pickle
 
@@ -12,7 +10,8 @@ api_keys = [
     "8265bd1679663a7ea12ac168da84d2e8",
     "53070df475a34d2304aded57801fde38",
     "36107e2c5e86005819066f1aec8dca34",
-    "27ce69086ff30b91cc60c0a4f465c5d"
+    "27ce69086ff30b91cc60c0a4f465c5d1",
+    "79662186f9c25ce73c5f50bcd8d95976"
 ]
 
 
@@ -43,33 +42,36 @@ def fetch_movie_details(movie_id):
 
 # Function to recommend movies based on similarity
 def get_movie_recommendations(movie, num_recommendations):
-    movie_index = movie_list[movie_list['title'] == movie].index[0]
-    distances = sorted(list(enumerate(movie_similarity[movie_index])), reverse=True, key=lambda x: x[1])
+    movie_index = int(movie_list[movie_list['title'] == movie].index[0])
+    top_100_similar_movie_indices  = movie_similarity[movie_index]
     recommended_movies = []
     recommended_movie_posters = []
-    for i in distances[1:num_recommendations+1]:
-        movie_id = movie_list.at[i[0], 'movie_id']
+    for movie_indices in top_100_similar_movie_indices[:num_recommendations]:
+        movie_id = movie_list.at[movie_indices, 'movie_id']
         poster_url, vote_average = fetch_movie_details(movie_id)
         recommended_movie_posters.append((poster_url, vote_average))
-        recommended_movies.append(movie_list.iloc[i[0]].title)
+        recommended_movies.append(movie_list.iloc[movie_indices].title)
     return recommended_movies, recommended_movie_posters
 
 
 # Function to recommend movies with rating filter
 def get_filtered_recommendations(movie, num_recommendations, min_rating):
-    movie_index = movie_list[movie_list['title'] == movie].index[0]
-    distances = sorted(list(enumerate(movie_similarity[movie_index])), reverse=True, key=lambda x: x[1])
+    movie_index = int(movie_list[movie_list['title'] == movie].index[0])
+    top_100_similar_movie_indices = movie_similarity[movie_index]
     recommended_movies = []
     recommended_movie_posters = []
-    for i in distances[1:]:
-        movie_index = i[0]
-        similarity_score = i[1]
-        vote_average = movie_list.iloc[movie_index]['vote_average']
-        if vote_average >= min_rating:
-            movie_id = movie_list.at[i[0], 'movie_id']
-            poster_url, vote_average = fetch_movie_details(movie_id)
-            recommended_movie_posters.append((poster_url, vote_average))
-            recommended_movies.append(movie_list.iloc[i[0]].title)
-            if len(recommended_movies) == num_recommendations:
-                break
+
+    min_rating = float(min_rating)
+    for movie_indices in top_100_similar_movie_indices[1:]:
+        try:
+            movie_id = movie_list.at[movie_indices, 'movie_id']
+            vote_average = float(movie_list[movie_list['movie_id'] == movie_id].iloc[0]['vote_average'])
+            if vote_average >= min_rating:
+                poster_url, vote_average = fetch_movie_details(movie_id)
+                recommended_movie_posters.append((poster_url, vote_average))
+                recommended_movies.append(movie_list.iloc[movie_indices].title)
+                if len(recommended_movies) == num_recommendations:
+                    break
+        except IndexError:
+            continue
     return recommended_movies, recommended_movie_posters
